@@ -40,7 +40,7 @@ jobs:
 
     - name: Build Binary
       working-directory: ./autoClicker
-      run: go build ${{ matrix.build_flags }} -o ${{ matrix.output_name }} main.go
+      run: go build ${{ matrix.build_flags }} -o ${{ matrix.output_name }} .
 
     - name: Compress with UPX
       uses: svenstaro/upx-action@v2
