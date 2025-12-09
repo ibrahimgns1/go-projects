@@ -1,0 +1,58 @@
+name: Build Go Projects
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-autoclicker:
+    name: AutoClicker (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          
+          - os: ubuntu-latest
+            output_name: autoclicker-linux
+            build_flags: -ldflags="-s -w"
+            
+            install_deps: |
+              sudo apt-get update
+              sudo apt-get install -y libx11-dev libxst-dev libxtst-dev libxhook-dev xorg-dev
+          
+          
+          - os: windows-latest
+            output_name: autoclicker.exe
+            build_flags: -ldflags="-s -w -H=windowsgui"
+            install_deps: echo "Windows dependencies handled by Go"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Install System Dependencies
+      run: ${{ matrix.install_deps }}
+
+    - name: Build Binary
+      working-directory: ./autoclicker
+      run: go build ${{ matrix.build_flags }} -o ${{ matrix.output_name }} main.go
+
+    
+    - name: Compress with UPX
+      uses: svenstaro/upx-action@v2
+      with:
+        
+        files: ./autoclicker/${{ matrix.output_name }}
+        args: --best
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoClicker-${{ matrix.os }}
+        path: ./autoclicker/${{ matrix.output_name }}
