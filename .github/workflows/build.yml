@@ -7,21 +7,20 @@ on:
     branches: [ "main" ]
 
 jobs:
+
   build-autoclicker:
     name: AutoClicker (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false 
       matrix:
         include:
-          
           - os: ubuntu-latest
             output_name: autoclicker-linux
             build_flags: -ldflags="-s -w"
-            
             install_deps: |
               sudo apt-get update
-              sudo apt-get install -y libx11-dev libxst-dev libxtst-dev libxhook-dev xorg-dev
-          
+              sudo apt-get install -y gcc libc6-dev libx11-dev libxtst-dev libpng-dev xorg-dev
           
           - os: windows-latest
             output_name: autoclicker.exe
@@ -40,19 +39,17 @@ jobs:
       run: ${{ matrix.install_deps }}
 
     - name: Build Binary
-      working-directory: ./autoclicker
+      working-directory: ./autoClicker
       run: go build ${{ matrix.build_flags }} -o ${{ matrix.output_name }} main.go
 
-    
     - name: Compress with UPX
       uses: svenstaro/upx-action@v2
       with:
-        
-        files: ./autoclicker/${{ matrix.output_name }}
+        files: ./autoClicker/${{ matrix.output_name }}
         args: --best
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: AutoClicker-${{ matrix.os }}
-        path: ./autoclicker/${{ matrix.output_name }}
+        path: ./autoClicker/${{ matrix.output_name }}
